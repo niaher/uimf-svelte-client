@@ -1,0 +1,7 @@
+.vscode
+example
+.prettierrc
+rollup.config.js
+svelte.config.js
+tsconfig.json
+tsconfig.tsbuildinfo

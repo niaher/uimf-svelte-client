@@ -1,0 +1,11 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",  
+  "include": ["**/*"],
+  "exclude": ["node_modules/*", "__sapper__/*", "public/*"],
+    "compilerOptions": {
+      "module": "ES6",
+      "target": "ES6",
+      "lib": ["ES6", "DOM"],
+      "moduleResolution": "node"
+    }
+  }

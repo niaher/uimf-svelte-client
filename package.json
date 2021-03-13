@@ -1,0 +1,50 @@
+{
+  "name": "uimf-svelte-client",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup --config",
+    "dev": "rollup --config --watch",
+    "validate": "svelte-check",
+    "pack": "tsc --project ./tsconfig.json && npm pack",
+    "clean": "powershell -File clean.ps1"
+  },
+  "svelte": "./export.svelte.js",
+  "types": "./index.ts",
+  "devDependencies": {
+    "cli-color": "^2.0.0"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.2",
+    "@modular-css/rollup": "^26.0.0",
+    "@modular-css/svelte": "^26.0.0",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-multi-entry": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@rollup/plugin-typescript": "^8.2.0",
+    "@rollup/plugin-url": "^6.0.0",
+    "@tsconfig/svelte": "^1.0.10",
+    "@types/axios": "^0.14.0",
+    "abstract-state-router": "^6.1.0",
+    "autoprefixer": "^10.2.5",
+    "axios": "^0.21.1",
+    "bootstrap": "^5.0.0-beta2",
+    "postcss": "^8.2.7",
+    "postcss-url": "^10.1.1",
+    "rollup": "^2.41.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-inject-process-env": "^1.3.1",
+    "rollup-plugin-scss": "^2.6.1",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "sass": "^1.32.8",
+    "svelte": "^3.35.0",
+    "svelte-check": "^1.2.3",
+    "svelte-preprocess": "^4.6.9",
+    "svelte-select": "^3.17.0",
+    "svelte-state-renderer": "^3.0.1",
+    "sveltejs-tippy": "^3.0.0",
+    "tslib": "^2.1.0",
+    "typescript": "^4.2.3"
+  }
+}
