@@ -1,4 +1,9 @@
 node_modules
+
+# various
+.rollup.cache
+
+# build artifacts
 build
 dist
 index.d.ts
@@ -7,6 +12,7 @@ index.js.map
 src/ts/**/*.d.ts
 src/ts/**/*.js.map
 src/ts/**/*.js
+example/**/*.js
+example/**/*.js.map
 *.tsbuildinfo
 *.tgz
-.rollup.cache
