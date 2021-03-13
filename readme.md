@@ -9,6 +9,7 @@ The server for this app is implemented in https://github.com/niaher/uimf-app.
 1. Install the npm package with `npm install uimf-svelte-client --save-dev`.
 2. Copy `svelte.config.js` into your root directory.
 3. Copy `rollup.config.js` into your root directory. Adjust the file as needed and make sure to set correct values for `disDir` and `app` (entry point to your application).
+4. Copy `tsconfig.json` into your root directory.
 4. Set up these scripts in your `package.json`:
     ```json
     "build": "rollup --config",

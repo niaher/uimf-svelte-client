@@ -16,3 +16,6 @@ example/**/*.js
 example/**/*.js.map
 *.tsbuildinfo
 *.tgz
+
+# except
+!src/ui/**/*index.js
