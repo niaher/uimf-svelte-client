@@ -1,5 +1,5 @@
 import { ControlRegister } from '../';
-import { default as Layout } from '../src/ui/components/Layout.svelte';
+import { default as Layout } from './Layout.svelte';
 
 new Layout({
 	target: document.body,

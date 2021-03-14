@@ -1,8 +1,6 @@
 <script>
-	import { UimfApp, UimfServer, ControlRegister } from "../../ts/framework";
-	import Menu from "./Menu.svelte";
-	import Content from "./Content.svelte";
-	import "../../style/bootstrap.scss";
+	import { UimfApp, UimfServer, ControlRegister, Menu, Content } from "../export.svelte.js";
+	import "../src/style/bootstrap.scss";
 	
 	export let controlRegister: ControlRegister;
 

@@ -5,3 +5,4 @@ rollup.config.js
 svelte.config.js
 tsconfig.json
 tsconfig.tsbuildinfo
+*.ps1

@@ -18,18 +18,32 @@ The server for this app is implemented in https://github.com/niaher/uimf-app.
 
 ## Sample usage
 
-If you're happy with the defaults you can start using the client, by creating your app as soo:
+Creating an app is as simple as creating a svelte component like this one:
 
 ```typescript
-import { ControlRegister } from 'uimf-svelte-client';
-import { default as Layout } from 'uimf-svelte-client/src/ui/components/Layout.svelte';
+<script>
+	import { UimfApp, UimfServer, ControlRegister, Menu, Content  } from "uimf-svelte-client";
+	import "uimf-svelte-client/src/style/bootstrap.scss";
+	
+	export let controlRegister: ControlRegister;
 
-new Layout({
-	target: document.body,
-	props: {
-		controlRegister: new ControlRegister()
-	}
-});
+	const server = new UimfServer("/api/form/metadata", "/api/form/run");
+	const app = new UimfApp(server, controlRegister);
+	let menu = null;
+
+	app.on("app:loaded", () => {
+		menu = app.menu;
+	});
+</script>
+
+<main class="container-fluid">
+	<div class="row">
+		<div class="col-sm-2">
+			<Menu {app} {menu} />
+		</div>
+		<div class="col-sm-10">
+			<Content {app} />
+		</div>
+	</div>
+</main>
 ```
-
-Otherwise you can create your version of `Layout.svelte` and use it instead.
