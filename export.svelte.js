@@ -11,6 +11,7 @@ export * from "./src/ts/handlers";
 // Inputs.
 export { default as BooleanInput } from "./src/ui/inputs/Boolean.svelte";
 export { default as DateInput } from "./src/ui/inputs/Date.svelte";
+export { default as DateRangeInput } from "./src/ui/inputs/DateRange.svelte";
 export { default as DropdownInput } from "./src/ui/inputs/Dropdown.svelte";
 export { default as EmailInput } from "./src/ui/inputs/Email.svelte";
 export { default as FileUploadInput } from "./src/ui/inputs/FileUpload.svelte";

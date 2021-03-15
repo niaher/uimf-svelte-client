@@ -22,6 +22,7 @@
 	// Inputs.
 	registerInput(inputs.Boolean);
 	registerInput(inputs.Date);
+	registerInput(inputs.DateRange);
 	registerInput(inputs.Dropdown);
 	registerInput(inputs.Email);
 	registerInput(inputs.FileUpload);

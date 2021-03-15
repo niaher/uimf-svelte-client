@@ -12,7 +12,7 @@
          * @param {Date} date the date to convert.
          * @param {boolean} endOfDay indicate whether to adjust the time to the end of day.
          */
-        private static convertToUtc(date: Date, endOfDay?: boolean): Date {
+        public static convertToUtc(date: Date, endOfDay?: boolean): Date {
             if (date == null) {
                 return null;
             }
@@ -43,7 +43,7 @@
             return Promise.resolve();
         }
 
-        private static serializeDate(value: Date): string {
+        public static serializeDate(value: Date): string {
             return (
                 value.getFullYear() +
                 "-" +
@@ -69,7 +69,7 @@
 </script>
 
 <script>
-    import type { FormInstance, UimfApp }from "../../ts/framework";
+    import type { FormInstance, UimfApp } from "../../ts/framework";
 
     export let app: UimfApp;
     export let form: FormInstance;

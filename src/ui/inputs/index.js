@@ -1,5 +1,6 @@
 export * as Boolean from "./Boolean.svelte";
 export * as Date from "./Date.svelte";
+export * as DateRange from "./DateRange.svelte";
 export * as Dropdown from "./Dropdown.svelte";
 export * as Email from "./Email.svelte";
 export * as FileUpload from "./FileUpload.svelte";
