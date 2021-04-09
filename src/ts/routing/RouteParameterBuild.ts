@@ -11,7 +11,7 @@ export class RouteParameterBuilder {
 	}
 
 	public buildFormRouteParameters(formId: string, values: any, keepDiscriminatorUnchanged: boolean = false): any {
-		const form = this.app.getFormInstance(formId, true);
+		const formMetadata = this.app.getForm(formId);
 
 		values = values || {};
 		const normalizedValues = {};
@@ -20,9 +20,10 @@ export class RouteParameterBuilder {
 		}
 
 		const urlParams = {};
-		form.metadata.InputFields.forEach(inputFieldMetadata => {
-			var input = form.inputs[inputFieldMetadata.Id];
+		formMetadata.InputFields.forEach(inputFieldMetadata => {
+			var input = this.app.controlRegister.createInputController(inputFieldMetadata);
 			var value = normalizedValues[inputFieldMetadata.Id.toLowerCase()];
+
 			var serializedValue = input.serialize(value);
 
 			if (serializedValue != null) {
@@ -31,10 +32,10 @@ export class RouteParameterBuilder {
 		});
 
 		if (keepDiscriminatorUnchanged) {
-			urlParams[this.parameterName] = RouteParameterBuilder.parseQueryStringParameters(location.hash)[this.parameterName];
+			urlParams[this.parameterName] = RouteParameterBuilder.parseQueryStringParameters(location.pathname)[this.parameterName];
 		}
 		else if (formId === this.currentForm) {
-			const d = RouteParameterBuilder.parseQueryStringParameters(location.hash)[this.parameterName] || 0;
+			const d = RouteParameterBuilder.parseQueryStringParameters(location.pathname)[this.parameterName] || 0;
 			const dAsNumber = parseInt(d, 10);
 			urlParams[this.parameterName] = isNaN(dAsNumber) ? 0 : dAsNumber + 1;
 		}

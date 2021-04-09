@@ -1,5 +1,7 @@
-import * as abstractStateRouter from "abstract-state-router";
-import * as svelteStateRenderer from "svelte-state-renderer";
+import abstractStateRouter from "abstract-state-router";
+import svelteStateRenderer from "svelte-state-renderer";
+import sausageRouter from "sausage-router";
+import hashBrownRouter from "hash-brown-router";
 import { RouteParameterBuilder } from "./RouteParameterBuild";
 import type { IAppRouter, UimfApp } from "../framework";
 import EventSource from "../framework/EventManager";
@@ -16,10 +18,13 @@ export class AppRouter extends EventSource implements IAppRouter {
 		super();
 
 		this.element = element;
-		this.stateRenderer = (svelteStateRenderer as any).default({});
-		this.stateRouter = (abstractStateRouter as any).default(this.stateRenderer, this.element);
-		const rpb = this.rpb = new RouteParameterBuilder("_", app);
+		this.stateRenderer = svelteStateRenderer({});
+		this.stateRouter = abstractStateRouter(this.stateRenderer, this.element, {
+			pathPrefix: '',
+			router: hashBrownRouter(sausageRouter())
+		});
 
+		const rpb = this.rpb = new RouteParameterBuilder("_", app);
 		const self = this;
 
 		this.stateRouter.addState({
@@ -63,7 +68,7 @@ export class AppRouter extends EventSource implements IAppRouter {
 	}
 
 	public getUrlParams(): any {
-		return RouteParameterBuilder.parseQueryStringParameters(location.hash);
+		return RouteParameterBuilder.parseQueryStringParameters(location.pathname + location.search);
 	};
 
 	public setFormUrlParams(params: any): void {
@@ -80,12 +85,12 @@ export class AppRouter extends EventSource implements IAppRouter {
 	}
 
 	public getCurrentFormId(): string {
-		var formIdStartAt = location.hash.indexOf("form/");
+		const urlPrefix = "/form/";
+		var formIdStartAt = location.pathname.indexOf(urlPrefix);
 		if (formIdStartAt === -1) {
 			return null;
 		}
 
-		var parts = location.hash.split("?")[0].split("/");
-		return parts[parts.length - 1];
+		return location.pathname.substring(formIdStartAt + urlPrefix.length);
 	}
 }

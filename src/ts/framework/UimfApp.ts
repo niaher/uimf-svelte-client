@@ -76,18 +76,24 @@ export class UimfApp {
 		this.fire("app:loaded", null);
 	}
 
-	public getForm(id: string): FormMetadata {
-		return this.formsById[id];
+	public getForm(id: string, throwError: boolean = false): FormMetadata {
+		var value = this.formsById[id];
+
+		if (value == null){
+			if (throwError) {
+				throw Error(`Form ${id} not found.`);
+			}
+
+			return null;
+		}
+
+		return value;
 	}
 
 	public getFormInstance(formId: string, throwError: boolean = false): FormInstance {
-		const metadata = this.getForm(formId);
+		const metadata = this.getForm(formId, throwError);
 
 		if (metadata == null) {
-			if (throwError) {
-				throw Error(`Form ${formId} not found.`);
-			}
-
 			return null;
 		}
 
