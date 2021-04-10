@@ -5,6 +5,7 @@ import hashBrownRouter from "hash-brown-router";
 import { RouteParameterBuilder } from "./RouteParameterBuild";
 import type { IAppRouter, UimfApp } from "../framework";
 import EventSource from "../framework/EventManager";
+import CaseInsensitiveDictionary from "./CaseInsensitiveDictionary";
 
 type ResolveCallback = (error: boolean, content: any) => string;
 
@@ -13,11 +14,13 @@ export class AppRouter extends EventSource implements IAppRouter {
 	public readonly stateRouter: any;
 	private readonly element: HTMLElement;
 	private readonly rpb: RouteParameterBuilder;
+	private readonly app: UimfApp;
 
 	constructor(element: HTMLElement, app: UimfApp, formComponent, defaultForm: string) {
 		super();
 
 		this.element = element;
+		this.app = app;
 		this.stateRenderer = svelteStateRenderer({});
 		this.stateRouter = abstractStateRouter(this.stateRenderer, this.element, {
 			pathPrefix: '',
@@ -78,6 +81,32 @@ export class AppRouter extends EventSource implements IAppRouter {
 
 	public go(form: string, params: any, keepDiscriminatorUnchanged: boolean = false): void {
 		this.stateRouter.go("form", this.rpb.buildFormRouteParameters(form, params, keepDiscriminatorUnchanged));
+	}
+
+	public goToUrl(u: string | URL): Promise<void> {
+		const url = typeof (u) === "string" ? new URL(u) : u;
+		const urlPrefix = "/form/";
+
+		if (!url.pathname.startsWith(urlPrefix)) {
+			window.location.href = url.href;
+			return Promise.resolve();
+		}
+
+		const form = url.pathname.substring(urlPrefix.length);
+		const queryStringParams = RouteParameterBuilder.parseQueryStringParameters(url.pathname);
+		const queryStringParamsDic = new CaseInsensitiveDictionary(queryStringParams);
+
+		const inputFieldValues = {};
+		const metadata = this.app.getForm(form);
+
+		var promises = metadata.InputFields.map(inputFieldMetadata => {
+			var input = this.app.controlRegister.createInputController(inputFieldMetadata);
+			var value = queryStringParamsDic.getByKey(inputFieldMetadata.Id);
+
+			return input.deserialize(value).then(t => inputFieldValues[inputFieldMetadata.Id] = t);
+		});
+
+		return Promise.all(promises).then(() => this.go(form, inputFieldValues, false));
 	}
 
 	public makeUrl(form: string, params: any, keepDiscriminatorUnchanged: boolean = false): string {

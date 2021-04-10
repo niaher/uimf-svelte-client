@@ -1,12 +1,74 @@
 <script context="module">
     import { OutputControlConfiguration } from "../../ts/framework";
+    import { FormLink as FormLinkMetadata } from "../../ts/server/FormLink";
+
     export const config = new OutputControlConfiguration(false, true, false, "paginated-data");
+
+    class Row {
+        constructor (data:any) {
+            this.data = data;
+        }
+
+        data:any = null;
+        selected:boolean = false;
+    }
+
+    class Page {
+        constructor(form:FormInstance, inputFieldValues:any, index:number){
+            this.form = form;
+            this.index = index;
+            this.inputFieldValues = inputFieldValues;
+        }
+
+        public index:number;
+        public inputFieldValues:any;
+        private form:FormInstance;
+        
+        url(app:UimfApp):string {
+            return app.router.makeUrl(this.form.metadata.Id, this.inputFieldValues, true);
+        }
+
+        async go() {
+            await this.form.setInputFields(this.inputFieldValues);
+            await this.form.submit(true);
+        }
+    }
+
+    class BulkAction extends FormLinkMetadata {
+        public refreshLabel() {
+            let selectedCount = this.InputFieldValues.ItemIds.Items.length;
+
+            if (selectedCount > 0) {
+                this.Label = `${this._originalLabel} (${selectedCount})`;
+            } else {
+                this.disabled = true;
+            }
+        }
+
+        public addItem(itemId:any) {
+            this.InputFieldValues.ItemIds.Items.push(itemId);
+        }
+
+        public static createFrom(action:BulkAction):BulkAction {
+            var bulkAction:BulkAction = new BulkAction();
+            Object.assign(bulkAction, JSON.parse(JSON.stringify(action)));
+
+            bulkAction._originalLabel = bulkAction.Label;
+            bulkAction.InputFieldValues.ItemIds.Items = [];
+
+            return bulkAction;
+        }
+
+        private _originalLabel: string;
+        public disabled: boolean;
+        public ItemId: any;
+    }
 </script>
 
 <script>
     import { FormInstance, OutputController, UimfApp } from "../../ts/framework";
     import { OutputFieldMetadata } from "../../ts/server";
-    import { beforeUpdate, onMount, tick } from "svelte";
+    import { onMount } from "svelte";
     import { PaginationParameters } from "../inputs/Paginator.svelte";
     import Output from "../Output.svelte";
     import { tooltip } from "../components/Tooltip.svelte";
@@ -16,58 +78,52 @@
     export let field: OutputController;
     export let form: FormInstance;
 
-    let columns: OutputFieldMetadata[] = field.metadata.CustomProperties.Columns.sort(
-        (a, b) => a.OrderIndex - b.OrderIndex
-    );
-
+    let columns: OutputFieldMetadata[] = field.metadata.CustomProperties.Columns.sort((a, b) => a.OrderIndex - b.OrderIndex);
     let paginatorId = field.metadata.CustomProperties.Customizations.Paginator;
     let paginatorValue: PaginationParameters;
     let pageCount: number;
     let inputFieldValues: any;
-    let pages = [];
+    let pages:Page[] = [];
     let pageSizes = [10, 20, 50];
-    let bulkActionsProperty = field.metadata.getCustomProperty(
-        "BulkActionsProperty"
-    );
-    let bulkActions: OutputController[] = [];
-    let rowSelectionChanged = true;
+    let bulkActionsProperty = field.metadata.getCustomProperty("BulkActionsProperty");
+    let bulkActions: BulkAction[] = [];
     let allRowsSelected = false;
+    let rows:Row[] = getRows();
 
-    field.on("changed", function () {
-        rowSelectionChanged = true;
+    field.on("changed", async function () {
         allRowsSelected = false;
+        rows = getRows();
+        await init();
     });
 
-    onMount(async () => {
-        inputFieldValues = await form.getInputFields();
+    onMount(async() => {
+        await init();
     });
 
-    beforeUpdate(() => {
-        paginatorValue =
-            form.inputs[paginatorId].value || new PaginationParameters();
+    async function init() {
+        paginatorValue = form.inputs[paginatorId].value || new PaginationParameters();
         pageCount = Math.ceil(field.data.TotalCount / paginatorValue.PageSize);
-
+        inputFieldValues = await form.getInputFields();
         pages = [];
+
         for (let i = 1; i <= pageCount; i++) {
             var formParams = getInputFieldValuesForPage(i);
-
-            pages.push({
-                index: i,
-                label: i.toString(),
-                url: app.router.makeUrl(form.metadata.Id, formParams, true),
-            });
+            pages.push(new Page(form, formParams, i));
         }
 
-        if (bulkActionsProperty != null && rowSelectionChanged) {
-            bulkActions = getBulkActions(field.data.Results);
-            rowSelectionChanged = false;
+        if (bulkActionsProperty != null) {
+            bulkActions = getBulkActions(rows);
         }
-    });
+    }
 
-    function getCellValue(row, column: OutputFieldMetadata): OutputController {
+    function getRows() {
+        return field.data.Results?.map(t => new Row(t));
+    }
+
+    function getCellValue(row:Row, column: OutputFieldMetadata): OutputController {
         return new OutputController(
             new OutputFieldMetadata(column),
-            row[column.Id]
+            row.data[column.Id]
         );
     }
 
@@ -84,11 +140,11 @@
         };
     }
 
-    function getBulkActions(rows) {
-        var actions = [];
+    function getBulkActions(rows:Row[]) {
+        var actions:BulkAction[] = [];
 
         for (let row of rows) {
-            let rowActions = (row[bulkActionsProperty] || {}).Actions || [];
+            let rowActions:BulkAction[] = (row.data[bulkActionsProperty] || {}).Actions || [];
 
             // Bulk actions will have `ItemId` property.
             rowActions = rowActions.filter((t) => t.ItemId != null);
@@ -97,44 +153,34 @@
                 let bulkAction = actions.find((t) => t.Form === action.Form);
 
                 if (bulkAction == null) {
-                    bulkAction = JSON.parse(JSON.stringify(action));
-                    bulkAction._originalLabel = bulkAction.Label;
-                    bulkAction.InputFieldValues.ItemIds.Items = [];
-
+                    bulkAction = BulkAction.createFrom(action);
                     actions.push(bulkAction);
                 }
 
-                if (row._selected) {
-                    bulkAction.InputFieldValues.ItemIds.Items.push(
-                        action.ItemId
-                    );
+                if (row.selected) {
+                    bulkAction.addItem(action.ItemId);
                 }
             }
         }
 
         for (let action of actions) {
-            let selectedCount = action.InputFieldValues.ItemIds.Items.length;
-            if (selectedCount > 0) {
-                action.Label = `${action._originalLabel} (${selectedCount})`;
-            } else {
-                action._disabled = true;
-            }
+            action.refreshLabel();
         }
 
-        return actions.map((t) => new OutputController(null, t));
+        return actions;
     }
 
     function selectAllRows(selected: boolean) {
-        field.data.Results.forEach((row) => {
-            row._selected = selected;
+        rows.forEach((row) => {
+            row.selected = selected;
         });
 
         updateBulkActions();
     }
 
     function updateBulkActions() {
-        rowSelectionChanged = true;
-        field.data.Results = field.data.Results;
+        bulkActions = getBulkActions(rows);
+        rows = rows;
     }
 </script>
 
@@ -144,7 +190,7 @@
     {#if bulkActions.length > 0}
     <div class="btn-bar">
         {#each bulkActions as action}
-            <FormLink {form} {app} field={action} disabled={action.data._disabled} />
+            <FormLink {form} {app} field={new OutputController(null, action)} disabled={action.disabled} />
         {/each}
     </div>
     {/if}
@@ -161,20 +207,18 @@
                     </th>
                 {/if}
                 {#each columns as column}
-                    <th use:tooltip={getCustomProperty(column, "Documentation")}
-                        >{column.Label}</th
-                    >
+                    <th use:tooltip={getCustomProperty(column, "Documentation")}>{column.Label}</th>
                 {/each}
             </tr>
         </thead>
         <tbody>
-            {#each field.data.Results as row}
+            {#each rows as row}
                 <tr>
                     {#if bulkActions.length > 0}
                         <td>
                             <input
                                 type="checkbox"
-                                bind:checked={row._selected}
+                                bind:checked={row.selected}
                                 on:change={() => updateBulkActions()}
                             />
                         </td>
@@ -202,7 +246,7 @@
                 on:blur={() =>
                     app.router.go(
                         form.metadata.Id,
-                        getInputFieldValuesForPage(paginatorValue.PageIndex),
+                        getInputFieldValuesForPage(1),
                         true
                     )}
             >
@@ -216,7 +260,11 @@
                         class="page-item"
                         class:active={page.index == paginatorValue.PageIndex}
                     >
-                        <a class="page-link" href={page.url}>{page.label}</a>
+                        {#if form.parentForm != null}
+                            <button class="page-link" on:click={()=> page.go()}>{page.index}</button>
+                        {:else}
+                            <a class="page-link" href={page.url(app)}>{page.index}</a>
+                        {/if}
                     </li>
                 {/each}
             </ul>

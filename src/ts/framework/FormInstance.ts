@@ -9,6 +9,8 @@ export class FormInstance {
 	public outputs: Record<string, OutputController> = {};
 	public inputs: Record<string, InputController<any>> = {};
 	public response: FormResponse;
+	public parentForm: FormInstance = null;
+
 	private eventHandlers: {} = {};
 	private eventHandlerCounter = 0;
 
@@ -129,9 +131,10 @@ export class FormInstance {
 				fn.run(f, self.app, self.response);
 			});
 
-			await self.fire('form:responseHandled', { 
+			await self.fire('form:responseHandled', {
 				response: self.response,
-				postOnLoad: postOnLoad });
+				postOnLoad: postOnLoad
+			});
 
 			return await Promise.resolve(self.response);
 		});

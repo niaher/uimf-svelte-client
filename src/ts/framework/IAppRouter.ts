@@ -1,5 +1,6 @@
 export interface IAppRouter {
 	go: (form: string, params: any, keepDiscriminatorUnchanged: boolean) => void;
+	goToUrl: (url: string | URL) => Promise<void>;
 	makeUrl: (form: string, params: any, keepDiscriminatorUnchanged: boolean) => string;
 	setFormUrlParams: (params: any) => void;
 	getUrlParams: () => any;

@@ -17,6 +17,8 @@
     export let form: FormInstance;
 
     let inlineForm = app.getFormInstance(field.data.Form);
+    inlineForm.parentForm = form;
+    
     let inputsSet = false;
 
     onMount(async () => {

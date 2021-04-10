@@ -1,4 +1,5 @@
 import type { UimfApp } from "../framework";
+import CaseInsensitiveDictionary from "./CaseInsensitiveDictionary";
 
 export class RouteParameterBuilder {
 	public readonly parameterName: string;
@@ -12,17 +13,12 @@ export class RouteParameterBuilder {
 
 	public buildFormRouteParameters(formId: string, values: any, keepDiscriminatorUnchanged: boolean = false): any {
 		const formMetadata = this.app.getForm(formId);
-
-		values = values || {};
-		const normalizedValues = {};
-		for (const prop of Object.keys(values)) {
-			normalizedValues[prop.toLowerCase()] = values[prop];
-		}
-
+		const valueDic = new CaseInsensitiveDictionary(values || {});
 		const urlParams = {};
+		
 		formMetadata.InputFields.forEach(inputFieldMetadata => {
 			var input = this.app.controlRegister.createInputController(inputFieldMetadata);
-			var value = normalizedValues[inputFieldMetadata.Id.toLowerCase()];
+			var value = valueDic.getByKey(inputFieldMetadata.Id);
 
 			var serializedValue = input.serialize(value);
 

@@ -79,12 +79,8 @@ export class UimfApp {
 	public getForm(id: string, throwError: boolean = false): FormMetadata {
 		var value = this.formsById[id];
 
-		if (value == null){
-			if (throwError) {
-				throw Error(`Form ${id} not found.`);
-			}
-
-			return null;
+		if (value == null && throwError){
+			throw Error(`Form ${id} not found.`);
 		}
 
 		return value;
