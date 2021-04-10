@@ -10,6 +10,14 @@
 
 	app.on("app:loaded", () => {
 		menu = app.menu;
+
+		document.addEventListener("click", function (e) {
+			var el:any = e.target;
+			if (el.tagName === "A") {
+				e.preventDefault();
+				app.router.goToUrl(el.href);
+			}
+		});
 	});
 </script>
 
